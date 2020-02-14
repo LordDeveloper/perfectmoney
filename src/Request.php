@@ -23,7 +23,7 @@ class Request
 
     public function __construct()
     {
-        $this->authenticate['AccountID'] = config('perfectmoney.account_d');
+        $this->authenticate['AccountID'] = config('perfectmoney.account_id');
         $this->authenticate['PassPhrase'] = config('pefectmoney.password');
     }
     /**
