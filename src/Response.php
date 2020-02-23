@@ -95,6 +95,8 @@ class Response
      */
     public function __get($name)
     {
+        if(!isset($this->toObject()->{$name}))
+            return null;
         $response = $this->toObject()-> {$name};
         $this->setResponse($response);
         return $response;
