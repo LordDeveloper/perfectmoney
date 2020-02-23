@@ -24,7 +24,7 @@ class Request
     public function __construct()
     {
         $this->authenticate['AccountID'] = config('perfectmoney.account_id');
-        $this->authenticate['PassPhrase'] = config('pefectmoney.password');
+        $this->authenticate['PassPhrase'] = config('perfectmoney.password');
     }
     /**
      * @param $action
@@ -35,6 +35,7 @@ class Request
     {
         $client = new Client();
         $query = urldecode(http_build_query(array_merge($this->authenticate, $query)));
+        dd($this->authenticate);
         $promise = $client->getAsync(sprintf(static::PM_URL, $action), compact('query'))->then(
             [$this, 'onFulfilled'],
             [$this, 'onRejected']
