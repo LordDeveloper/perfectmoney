@@ -33,7 +33,7 @@ class PerfectMoneyApi
      */
     public static function __callStatic($method, $arguments = [])
     {
-        return call_user_func_array([new self::$client, $method], $arguments);
+        return call_user_func_array([new Client, $method], $arguments);
     }
 
 }
