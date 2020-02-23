@@ -11,16 +11,11 @@ class PerfectMoneyApi
      */
     private static $client;
 
-	
-	/**
-	 * return Client
-	 */
-	private static function getClient()
-	{
-		if(!self::$client instanceof Client)
-			return self::$client = new Client;
-		return  self::$client;
-	}
+    public function __construct()
+    {
+        self::$client = new Client;
+    }
+
     /**
      * @param $method
      * @param array $arguments
@@ -28,7 +23,7 @@ class PerfectMoneyApi
      */
     public function __call($method, $arguments = [])
     {
-        return call_user_func_array([self::getClient(), $method], $arguments);
+        return call_user_func_array([self::$client, $method], $arguments);
     }
 
     /**
@@ -38,7 +33,7 @@ class PerfectMoneyApi
      */
     public static function __callStatic($method, $arguments = [])
     {
-        return call_user_func_array([static::getClient(), $method], $arguments);
+        return call_user_func_array([new self::$client, $method], $arguments);
     }
 
 }
