@@ -35,7 +35,6 @@ class Request
     {
         $client = new Client();
         $query = urldecode(http_build_query(array_merge($this->authenticate, $query)));
-        dd($this->authenticate);
         $promise = $client->getAsync(sprintf(static::PM_URL, $action), compact('query'))->then(
             [$this, 'onFulfilled'],
             [$this, 'onRejected']
