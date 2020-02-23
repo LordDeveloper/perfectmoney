@@ -57,9 +57,9 @@ class Client
      * @param $PAYMENT_ID
      * @return Response
      */
-    public function confirm($Payee_Account, $Amount, $PAY_IN, $PAYMENT_ID)
+    public function confirm($Payer_Account, $Payee_Account, $Amount, $PAY_IN, $PAYMENT_ID)
     {
-        return $this->response->setResponse($this->parseHTML(($this->request->get('confirm', compact('Payee_Account', 'Amount', 'PAY_IN', 'PAYMENT_ID')))));
+        return $this->response->setResponse($this->parseHTML(($this->request->get('confirm', compact('Payer_Account', 'Payee_Account', 'Amount', 'PAY_IN', 'PAYMENT_ID')))));
     }
     /**
      * @param $content
