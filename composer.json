@@ -1,0 +1,35 @@
+{
+    "name": "jey/perfectmoney",
+    "description": "A simple Laravel package for PerfectMoney",
+    "type": "laravel-package",
+    "keywords": [
+        "laravel",
+        "jey",
+        "prefectmoney"
+    ],
+    "authors": [
+        {
+            "name": "Javad Sadeghi",
+            "email": "sadeghij87@gmail.com"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "~6.0",
+        "ext-dom": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PerfectMoney\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PerfectMoney\\ServiceProvider"
+            ],
+            "aliases": {
+                "PerfectMoney": "PerfectMoney\\Facade"
+            }
+        }
+    }
+}
