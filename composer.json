@@ -7,28 +7,25 @@
         "jey",
         "prefectmoney"
     ],
-    "authors": [
-        {
-            "name": "Javad Sadeghi",
-            "email": "sadeghij87@gmail.com"
-        }
-    ],
     "require": {
-        "guzzlehttp/guzzle": "~6.0",
-        "ext-dom": "*"
+        "php": "^8.*",
+        "guzzlehttp/guzzle": "7.4.2",
+        "ext-dom": "*",
+        "ext-json": "*",
+        "ext-libxml": "*"
     },
     "autoload": {
         "psr-4": {
-            "PerfectMoney\\": "src/"
+            "JEY\\PerfectMoney\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "PerfectMoney\\ServiceProvider"
+                "JEY\\PerfectMoney\\Providers\\PerfectMoneyServiceProvider"
             ],
             "aliases": {
-                "PerfectMoney": "PerfectMoney\\Facade"
+                "PerfectMoney": "JEY\\PerfectMoney\\Facades\\PerfectMoneyAPI"
             }
         }
     }

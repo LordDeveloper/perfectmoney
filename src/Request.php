@@ -1,83 +1,130 @@
 <?php
 
+namespace JEY\PerfectMoney;
 
-namespace PerfectMoney;
-
+use DOMDocument;
+use DOMXPath;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
-/**
- * Class Request
- * @package Jey\PerfectMoney
- */
 class Request
 {
-
-    const PM_URL = 'https://perfectmoney.com/acct/%s.asp';
+    protected static string $baseURL = 'https://perfectmoney.com/acct/';
 
     /**
-     * @var array
+     * @param $uri
+     * @param array $data
+     * @return array
      */
-    private $authenticate;
-
-    public function __construct()
+    public static function fetch($uri, array $data = []): array
     {
-        $this->authenticate['AccountID'] = config('perfectmoney.account_id');
-        $this->authenticate['PassPhrase'] = config('perfectmoney.password');
-    }
-    /**
-     * @param $action
-     * @param array $query
-     * @return mixed
-     */
-    public function get($action, $query = [])
-    {
-        $client = new Client();
-        $query = urldecode(http_build_query(array_merge($this->authenticate, $query)));
-        $promise = $client->getAsync(sprintf(static::PM_URL, $action), compact('query'))->then(
-            [$this, 'onFulfilled'],
-            [$this, 'onRejected']
-        );
-        return $promise->wait();
-    }
+        $query = array_merge($data, [
+            'AccountID' => config('perfectmoney.account_id'),
+            'PassPhrase' => config('perfectmoney.password'),
+        ]);
 
+        $client = new Client([
+            'base_uri' => static::$baseURL,
+        ]);
+
+        return static::inputs($client->getAsync(trim($uri, '/') .'.asp', compact('query'))->then(
+            [static::class, 'onFulfilled'],
+            [static::class, 'onRejected']
+        )->wait());
+
+    }
 
     /**
      * @param ResponseInterface $response
      * @return string
      */
-    private function onFulfilled(ResponseInterface $response) {
-        return $response->getBody()->getContents();
+    final public static function onFulfilled(ResponseInterface $response): string
+    {
+        return $response->getBody()
+            ->getContents();
     }
 
     /**
      * @param Throwable $exception
-     * @return mixed
+     * @internal
+     * @return string
      */
-    private function onRejected(Throwable $exception)
+    final public static function onRejected(Throwable $exception): string
     {
-        return $exception->getResponse()->getBody()->getContents();
+        return method_exists($exception, 'hasResponse')
+            ? (
+                $exception->hasResponse()
+                    ? $exception->getResponse()
+                        ->getBody()
+                        ->getContents()
+                    : $exception->getMessage()
+            ) : $exception->getMessage();
     }
 
     /**
-     * @param $method
-     * @param array $arguments
-     * @return mixed
+     * @param string $contents
+     * @return array
+     *@internal
      */
-    public function __call($method, $arguments = [])
+    private static function inputs(string $contents): array
     {
-        return call_user_func_array([$this, $method], $arguments);
+        $response = (function () use ($contents) {
+            $response = [
+                'success' => true,
+                'error' => null,
+                'response' => null,
+            ];
+
+            if(! static::isHTML($contents)) {
+                if(str_contains($contents, 'ERROR')) {
+                    return array_merge($response, [
+                        'success' => false,
+                        'error' => $contents,
+                    ]);
+                }
+
+                return array_merge($response, [
+                    'response' => $contents
+                ]);
+            }
+
+            $dom = new DOMDocument();
+            libxml_use_internal_errors(true);
+            $dom->loadHTML($contents);
+            libxml_use_internal_errors(false);
+            $xpath = new DOMXPath($dom);
+            $inputs = $xpath->query('//input');
+
+            if($inputs->count() > 0) {
+                foreach ($inputs as $input) {
+                    [$name, $value] = [$input->getAttribute('name'), $input->getAttribute('value')];
+
+                    if($name === 'ERROR') {
+                        $response['error'] = $value;
+                    } else {
+                        $response['response'][$name] = $value;
+                    }
+                }
+
+                return $response;
+            }
+
+            return array_merge($response, [
+                'success' => false,
+                'error' => 'NO_RESPONSE',
+            ]);
+        })();
+
+        return array_filter($response, fn ($item) => ! is_null($item));
     }
 
     /**
-     * @param $method
-     * @param array $arguments
-     * @return mixed
+     * @param $contents
+     * @return bool
      */
-    public static function __callStatic($method, $arguments = [])
+    private static function isHTML($contents): bool
     {
-        return call_user_func_array([new static, $method], $arguments);
+        return $contents !== strip_tags($contents);
     }
-
 }
